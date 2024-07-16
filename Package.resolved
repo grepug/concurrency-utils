@@ -1,0 +1,33 @@
+{
+  "originHash" : "099bd30d8decd78c73568a07981f3bd586a2e51876d4f1770a6388c82d266715",
+  "pins" : [
+    {
+      "identity" : "eventsource",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/grepug/EventSource.git",
+      "state" : {
+        "branch" : "master",
+        "revision" : "762541b22de4180b8cbdfd7a24ba2920070a5905"
+      }
+    },
+    {
+      "identity" : "swift-async-algorithms",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-async-algorithms",
+      "state" : {
+        "revision" : "6ae9a051f76b81cc668305ceed5b0e0a7fd93d20",
+        "version" : "1.0.1"
+      }
+    },
+    {
+      "identity" : "swift-collections",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-collections.git",
+      "state" : {
+        "revision" : "3d2dc41a01f9e49d84f0a3925fb858bed64f702d",
+        "version" : "1.1.2"
+      }
+    }
+  ],
+  "version" : 3
+}
