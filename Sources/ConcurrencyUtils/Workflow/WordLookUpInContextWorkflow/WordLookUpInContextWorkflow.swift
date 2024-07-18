@@ -35,7 +35,7 @@ public struct WordLookUpInContextWorkflow: Workflow {
         }
     }
     
-    public struct Output: Codable, Identifiable, Hashable {
+    public struct Output: Codable, Identifiable, Hashable, Sendable {
         public var word: String
         public var pos: String
         public var synonym: String?

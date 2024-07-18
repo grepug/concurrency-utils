@@ -48,6 +48,18 @@ public struct ClientRequest {
         self.body = body
     }
     
+    public init<T: Codable>(urlString: String, method: Method = .get, headers: [Header] = [], body: T?) {
+        self.url = .init(string: urlString)!
+        self.method = method
+        self.headers = headers.reduce([:], { $0.merging($1.dict, uniquingKeysWith: { a, b in a }) })
+        
+        if let body, let data = try? JSONEncoder().encode(body) {
+            self.body = data
+        } else {
+            self.body = nil
+        }
+    }
+    
     public var urlRequest: URLRequest {
         var req = URLRequest(url: url)
         req.httpMethod = req.httpMethod

@@ -7,25 +7,29 @@
 
 import Foundation
 
-class WordDetailTransformer {
+public class WordDetailTransformer {
     private var hasReturnedSenseChunk = false
     private var accumutedString = ""
-    let sep = "#;;;"
-    
-    typealias Item = WordLookUpInContextWorkflow.Output
 
-    func transformWordDetail(
-        word: String,
-        chunk: String
-    ) -> (item: Item, shouldTerminate: Bool)? {
+    let sep = "#;;;"
+
+    public typealias Item = WordLookUpInContextWorkflow.Output
+
+    public init() {}
+
+    public func transformWordDetail(word: String, chunk: String) -> (item: Item, shouldTerminate: Bool)? {
         self.accumutedString += chunk
 
-        let reg = #/.*?(\\^\\^|$)/#
+        // print("acc", accumutedString)
+
+        let reg = #/(.*?)(\^\^|$)/#
         let match = accumutedString.firstMatch(of: reg)
-        
+
         guard let substring = match?.output.1 else {
             return nil
         }
+
+        // print("substring", substring)
 
         let item = String(substring)
             .split(separator: sep)
@@ -46,6 +50,8 @@ class WordDetailTransformer {
         if self.hasReturnedSenseChunk && !descString.isEmpty && self.accumutedString.contains("^^") {
             let desc = handleMultipleLocales(descString)
 
+            assert(desc.isEmpty == false)
+
             let item = Item(word: word, pos: pos, lemma: lemma, synonym: synonym, sense: sense, desc: desc)
 
             return (item: item, shouldTerminate: true)
@@ -61,10 +67,10 @@ class WordDetailTransformer {
             guard let match = el.firstMatch(of: #/(.+?):\s?(.+?)$/#) else {
                 return
             }
-            
+
             let locale = CTLocale(rawValue: String(match.output.1))
             let content = String(match.output.2)
-            
+
             if let locale {
                 acc[locale] = content
             }
@@ -79,7 +85,7 @@ extension Array {
         }
         return self[index]
     }
-    
+
     func element(at index: Int, defaultsTo: Element) -> Element {
         guard index >= 0 && index < self.count else {
             return defaultsTo
