@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum WithTimeoutAndRetryForStreamResult<Value> {
+public enum WithTimeoutAndRetryForStreamResult<Value: Sendable & Codable>: Sendable, Codable {
     case value(Value), retry
 }
 
