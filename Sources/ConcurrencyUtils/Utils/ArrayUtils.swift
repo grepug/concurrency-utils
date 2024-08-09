@@ -1,4 +1,4 @@
-extension Sequence {
+public extension Sequence {
     func asyncMap<T>(
         _ transform: (Element) async throws -> T
     ) async rethrows -> [T] {
@@ -38,7 +38,7 @@ extension Sequence {
     }
 }
 
-extension Sequence where Element: Sendable {
+public extension Sequence where Element: Sendable {
     func concurrentMap<T>(
         _ transform: @Sendable @escaping (Element) async throws -> T
     ) async throws -> [T] where T: Sendable {
