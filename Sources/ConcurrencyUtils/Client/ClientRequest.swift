@@ -18,6 +18,8 @@ public struct ClientRequest {
     public enum Header {
         case authorization(bearer: String)
         case contentTypeJSON
+        case multiparFormData
+        case custom(key: String, value: String)
         
         var dict: [String: String] {
             switch self {
@@ -25,6 +27,10 @@ public struct ClientRequest {
                 return ["Authorization": "Bearer \(bearer)"]
             case .contentTypeJSON:
                 return ["Content-Type": "application/json"]
+            case .multiparFormData:
+                return ["Content-Type": "multipart/form-data"]
+            case .custom(let key, let value):
+                return [key: value]
             }
         }
     }
