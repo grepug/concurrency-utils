@@ -18,7 +18,7 @@ public struct ClientRequest {
     public enum Header {
         case authorization(bearer: String)
         case contentTypeJSON
-        case multiparFormData
+        case multiparFormData(boundary: String)
         case custom(key: String, value: String)
         
         var dict: [String: String] {
@@ -27,8 +27,8 @@ public struct ClientRequest {
                 return ["Authorization": "Bearer \(bearer)"]
             case .contentTypeJSON:
                 return ["Content-Type": "application/json"]
-            case .multiparFormData:
-                return ["Content-Type": "multipart/form-data"]
+            case .multiparFormData(let boundary):
+                return ["Content-Type": "multipart/form-data; boundary=\(boundary)"]
             case .custom(let key, let value):
                 return [key: value]
             }
