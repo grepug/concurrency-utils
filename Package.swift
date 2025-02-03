@@ -13,7 +13,7 @@ let package = Package(
             targets: ["ConcurrencyUtils"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/grepug/EventSource.git", branch: "master"),
+        .package(url: "https://github.com/grepug/event-source.git", branch: "master"),
         .package(url: "https://github.com/apple/swift-collections.git", .upToNextMinor(from: "1.1.0")),
         .package(url: "https://github.com/apple/swift-async-algorithms", from: "1.0.0"),
     ],
@@ -22,7 +22,7 @@ let package = Package(
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
             name: "ConcurrencyUtils", dependencies: [
-                "EventSource",
+                .product(name: "EventSource", package: "event-source"),
                 .product(name: "Collections", package: "swift-collections"),
                 .product(name: "AsyncAlgorithms", package: "swift-async-algorithms"),
             ]),
