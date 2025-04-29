@@ -21,6 +21,7 @@ public struct CancellableAsyncStream {
         let processingTask = Task {
             do {
                 try await process(continuation)
+                continuation.finish()
             } catch {
                 onError?(error)
                 continuation.finish(throwing: error)
@@ -52,6 +53,7 @@ public struct CancellableAsyncStream {
 
         let processingTask = Task {
             await process(continuation)
+            continuation.finish()
         }
 
         continuation.onTermination = { reason in
