@@ -111,8 +111,8 @@ public class DebouncedTask<T> {
 ///   - operation: The closure to execute after the debounce period
 /// - Returns: A configured `DebouncedTask` instance
 public func withDebouncedTask<T>(
-    debounceFor debounce: TimeInterval? = nil,
+    for debounce: TimeInterval? = nil,
     operation: @escaping () async throws -> T
 ) -> DebouncedTask<T> {
-    return DebouncedTask(debounce: debounce, operation: operation)
+    .init(debounce: debounce, operation: operation)
 }
