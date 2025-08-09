@@ -1,5 +1,5 @@
-public extension Sequence {
-    func asyncMap<T>(
+extension Sequence {
+    public func asyncMap<T>(
         _ transform: (Element) async throws -> T
     ) async rethrows -> [T] {
         var values = [T]()
@@ -11,7 +11,21 @@ public extension Sequence {
         return values
     }
 
-    func asyncReduce<Result>(
+    public func asyncCompactMap<T>(
+        _ transform: (Element) async throws -> T?
+    ) async rethrows -> [T] {
+        var values = [T]()
+
+        for element in self {
+            if let value = try await transform(element) {
+                values.append(value)
+            }
+        }
+
+        return values
+    }
+
+    public func asyncReduce<Result>(
         _ initialResult: Result,
         _ nextPartialResult: (_ partialResult: Result, _ item: Element) async throws -> Result
     ) async rethrows -> Result {
@@ -24,9 +38,9 @@ public extension Sequence {
         return result
     }
 
-    func asyncReduce<Result>(
+    public func asyncReduce<Result>(
         into initialResult: Result,
-        _ updateAccumulatingResult: (_ partialResult: inout Result, _ item: Element) async throws -> ()
+        _ updateAccumulatingResult: (_ partialResult: inout Result, _ item: Element) async throws -> Void
     ) async rethrows -> Result {
         var result = initialResult
 
@@ -38,8 +52,8 @@ public extension Sequence {
     }
 }
 
-public extension Sequence where Element: Sendable {
-    func concurrentMap<T>(
+extension Sequence where Element: Sendable {
+    public func concurrentMap<T>(
         _ transform: @Sendable @escaping (Element) async throws -> T
     ) async throws -> [T] where T: Sendable {
         let tasks = map { element in
@@ -49,6 +63,20 @@ public extension Sequence where Element: Sendable {
         }
 
         return try await tasks.asyncMap { task in
+            try await task.value
+        }
+    }
+
+    public func concurrentCompactMap<T>(
+        _ transform: @Sendable @escaping (Element) async throws -> T?
+    ) async throws -> [T] where T: Sendable {
+        let tasks = map { element in
+            Task {
+                try await transform(element)
+            }
+        }
+
+        return try await tasks.asyncCompactMap { task in
             try await task.value
         }
     }
