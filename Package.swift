@@ -1,4 +1,4 @@
-// swift-tools-version: 5.10
+// swift-tools-version: 6.0
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -11,6 +11,9 @@ let package = Package(
         .library(
             name: "ConcurrencyUtils",
             targets: ["ConcurrencyUtils"]),
+        .library(
+            name: "ConcurrencyUtilsTestingSupport",
+            targets: ["ConcurrencyUtilsTestingSupport"]),
     ],
     dependencies: [
         .package(url: "https://github.com/grepug/event-source.git", branch: "master"),
@@ -21,13 +24,20 @@ let package = Package(
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
-            name: "ConcurrencyUtils", dependencies: [
+            name: "ConcurrencyUtils",
+            dependencies: [
                 .product(name: "EventSource", package: "event-source"),
                 .product(name: "Collections", package: "swift-collections"),
                 .product(name: "AsyncAlgorithms", package: "swift-async-algorithms"),
             ]),
+        .target(
+            name: "ConcurrencyUtilsTestingSupport",
+            dependencies: ["ConcurrencyUtils"]),
         .testTarget(
             name: "ConcurrencyUtilsTests",
-            dependencies: ["ConcurrencyUtils"]),
+            dependencies: [
+                "ConcurrencyUtils",
+                "ConcurrencyUtilsTestingSupport",
+            ]),
     ]
 )

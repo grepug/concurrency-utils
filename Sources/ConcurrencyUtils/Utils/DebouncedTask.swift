@@ -26,11 +26,11 @@ import Foundation
 /// // Each call will cancel the previous one and only execute after 0.5 seconds
 /// try await searchTask.call()
 /// ```
-public class DebouncedTask<T> {
+public actor DebouncedTask<T: Sendable> {
     // MARK: - Properties
 
     /// The operation to be executed when the debounce period completes
-    let operation: () async throws -> T
+    let operation: @Sendable () async throws -> T
 
     /// Optional debounce interval in seconds
     /// If nil, the operation will execute immediately without delay
@@ -46,7 +46,7 @@ public class DebouncedTask<T> {
     /// - Parameters:
     ///   - debounce: Time interval to wait before executing the operation (in seconds)
     ///   - operation: The closure to execute after the debounce period
-    init(debounce: TimeInterval? = nil, operation: @escaping () async throws -> T) {
+    init(debounce: TimeInterval? = nil, operation: @escaping @Sendable () async throws -> T) {
         self.operation = operation
         self.debounce = debounce
     }
@@ -78,7 +78,7 @@ public class DebouncedTask<T> {
         task?.cancel()
 
         // Create a new task for this operation
-        task = Task {
+        task = Task { @Sendable in
             // Wait for the debounce period if specified
             if let debounce {
                 try await Task.sleep(for: .seconds(debounce))
@@ -110,9 +110,9 @@ public class DebouncedTask<T> {
 ///   - debounce: Time interval to wait before executing the operation (in seconds)
 ///   - operation: The closure to execute after the debounce period
 /// - Returns: A configured `DebouncedTask` instance
-public func withDebouncedTask<T>(
+public func withDebouncedTask<T: Sendable>(
     for debounce: TimeInterval? = nil,
-    operation: @escaping () async throws -> T
+    operation: @escaping @Sendable () async throws -> T
 ) -> DebouncedTask<T> {
     .init(debounce: debounce, operation: operation)
 }

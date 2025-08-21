@@ -12,9 +12,9 @@ public struct CancellableAsyncStream {
     /// - Returns: An AsyncThrowingStream that will automatically cancel its processing task when terminated
     public static func makeThrowingStream<T>(
         bufferingPolicy: AsyncThrowingStream<T, Error>.Continuation.BufferingPolicy = .unbounded,
-        _ process: @escaping (AsyncThrowingStream<T, Error>.Continuation) async throws -> Void,
-        onCancel: (() -> Void)? = nil,
-        onError: ((Error) -> Void)? = nil
+        _ process: @escaping @Sendable (AsyncThrowingStream<T, Error>.Continuation) async throws -> Void,
+        onCancel: (@Sendable () -> Void)? = nil,
+        onError: (@Sendable (Error) -> Void)? = nil
     ) -> AsyncThrowingStream<T, Error> {
         let (stream, continuation) = AsyncThrowingStream<T, Error>.makeStream(bufferingPolicy: bufferingPolicy)
 
@@ -46,8 +46,8 @@ public struct CancellableAsyncStream {
     /// - Returns: An AsyncStream that will automatically cancel its processing task when terminated
     public static func makeStream<T>(
         bufferingPolicy: AsyncStream<T>.Continuation.BufferingPolicy = .unbounded,
-        _ process: @escaping (AsyncStream<T>.Continuation) async -> Void,
-        onCancel: (() -> Void)? = nil
+        _ process: @escaping @Sendable (AsyncStream<T>.Continuation) async -> Void,
+        onCancel: (@Sendable () -> Void)? = nil
     ) -> AsyncStream<T> {
         let (stream, continuation) = AsyncStream<T>.makeStream(bufferingPolicy: bufferingPolicy)
 
@@ -77,9 +77,9 @@ extension AsyncThrowingStream where Failure == Error {
     /// - Returns: An AsyncThrowingStream that will automatically cancel its processing task when terminated
     public static func makeCancellable(
         bufferingPolicy: Continuation.BufferingPolicy = .unbounded,
-        _ process: @escaping (Continuation) async throws -> Void,
-        onError: ((Error) -> Void)? = nil,
-        onCancel: (() -> Void)? = nil
+        _ process: @escaping @Sendable (Continuation) async throws -> Void,
+        onError: (@Sendable (Error) -> Void)? = nil,
+        onCancel: (@Sendable () -> Void)? = nil
     ) -> AsyncThrowingStream<Element, Error> {
         return CancellableAsyncStream.makeThrowingStream(
             bufferingPolicy: bufferingPolicy,
@@ -100,8 +100,8 @@ extension AsyncStream {
     /// - Returns: An AsyncStream that will automatically cancel its processing task when terminated
     public static func makeCancellable(
         bufferingPolicy: Continuation.BufferingPolicy = .unbounded,
-        _ process: @escaping (Continuation) async -> Void,
-        onCancel: (() -> Void)? = nil
+        _ process: @escaping @Sendable (Continuation) async -> Void,
+        onCancel: (@Sendable () -> Void)? = nil
     ) -> AsyncStream<Element> {
         return CancellableAsyncStream.makeStream(
             bufferingPolicy: bufferingPolicy,

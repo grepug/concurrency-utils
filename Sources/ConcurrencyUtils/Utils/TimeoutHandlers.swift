@@ -8,25 +8,26 @@
 import Foundation
 
 public enum WithTimeoutAndRetryForStreamResult<Value: Sendable & Codable>: Sendable, Codable {
-    case value(Value), retry
+    case value(Value)
+    case retry
 }
 
-public func withTimeoutThrowingHandler<T>(timeout: Duration, operation: @escaping @Sendable () async throws -> T) async rethrows -> T {
+public func withTimeoutThrowingHandler<T>(timeout: Duration, operation: @escaping @Sendable () async throws -> T) async rethrows -> T where T: Sendable {
     try await withThrowingTaskGroup(of: T.self, returning: T.self) { group in
         group.addTask {
             try await operation()
         }
-        
+
         group.addTask {
             try? await Task.sleep(for: timeout)
             throw ConcurrencyError.timeout
         }
-        
+
         for try await result in group {
             group.cancelAll()
             return result
         }
-        
+
         // cancel all on either of the tasks finishes
         group.cancelAll()
         throw ConcurrencyError.timeout
@@ -37,9 +38,9 @@ public func withTimeoutAndRetryForStream<T, Result, S: AsyncSequence>(
     maxRetries: Int,
     timeout: Duration,
     delay: Duration = .seconds(2),
-    streamProvider: @escaping () -> S,
-    transform: @escaping (T) -> Result?
-) -> AsyncThrowingStream<WithTimeoutAndRetryForStreamResult<Result>, any Error> where S.Element == T {
+    streamProvider: @escaping @Sendable () -> S,
+    transform: @escaping @Sendable (T) -> Result?
+) -> AsyncThrowingStream<WithTimeoutAndRetryForStreamResult<Result>, any Error> where S.Element == T, T: Sendable {
     return AsyncThrowingStream { continuation in
         let taskManager = ActorIsolated<Task<Void, Never>?>(nil)
 
@@ -48,7 +49,7 @@ public func withTimeoutAndRetryForStream<T, Result, S: AsyncSequence>(
                 @Sendable func handleRetry() {
                     if retryCount < maxRetries {
                         Task {
-                            try await Task.sleep(for: delay) // 2 seconds delay before retrying
+                            try await Task.sleep(for: delay)  // 2 seconds delay before retrying
                             await taskManager.value?.cancel()
                             continuation.yield(.retry)
                             startStream(retryCount: retryCount + 1)
@@ -57,7 +58,7 @@ public func withTimeoutAndRetryForStream<T, Result, S: AsyncSequence>(
                         continuation.finish(throwing: ConcurrencyError.reachedMaxRetryCount)
                     }
                 }
-                
+
                 do {
                     try await withTimeoutThrowingHandler(timeout: timeout) {
                         for try await item in streamProvider() {
@@ -66,7 +67,7 @@ public func withTimeoutAndRetryForStream<T, Result, S: AsyncSequence>(
                             }
                         }
                     }
-                    
+
                     continuation.finish()
                 } catch {
                     if let error = error as? ConcurrencyError, error == .timeout {
@@ -76,7 +77,7 @@ public func withTimeoutAndRetryForStream<T, Result, S: AsyncSequence>(
                     }
                 }
             }
-            
+
             // Set the new task in the actor
             Task {
                 await taskManager.setValue(task)
@@ -98,7 +99,7 @@ public func withTimeoutAndRetry<T>(
     timeout: Duration,
     delay: Duration = .seconds(2),
     task: @escaping @Sendable () async throws -> T
-) async throws -> T {
+) async throws -> T where T: Sendable {
     var currentRetry = 0
 
     while currentRetry <= maxRetries {
@@ -112,13 +113,13 @@ public func withTimeoutAndRetry<T>(
                 if currentRetry > maxRetries {
                     throw ConcurrencyError.reachedMaxRetryCount
                 } else {
-                    try await Task.sleep(for: delay) // 2 seconds delay before retrying
+                    try await Task.sleep(for: delay)  // 2 seconds delay before retrying
                 }
             } else {
                 throw error
             }
         }
     }
-    
+
     throw ConcurrencyError.reachedMaxRetryCount
 }
